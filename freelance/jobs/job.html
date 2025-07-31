@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Browse Jobs</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 0; }
+    .container { max-width: 800px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.08); }
+    h2 { text-align: center; color: #263238; }
+    .job-list { margin-top: 30px; }
+    .job-item { border-bottom: 1px solid #eee; padding: 18px 0; }
+    .job-item:last-child { border-bottom: none; }
+    .job-title { font-size: 20px; color: #0277bd; margin-bottom: 6px; }
+    .job-category { font-size: 14px; color: #555; margin-bottom: 4px; }
+    .job-salary { font-size: 15px; color: #388e3c; margin-bottom: 4px; }
+    .job-desc { color: #333; }
+    .no-jobs { text-align: center; color: #888; margin-top: 40px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Browse Jobs</h2>
+    <div class="job-list">
+      <?php
+        $file = '../jobs.json';
+        if (file_exists($file)) {
+          $json = file_get_contents($file);
+          $jobs = json_decode($json, true);
+        } else {
+          $jobs = [];
+        }
+        if ($jobs && count($jobs) > 0):
+          foreach ($jobs as $job): ?>
+            <div class="job-item">
+              <div class="job-title"><?php echo htmlspecialchars($job['title']); ?></div>
+              <div class="job-category">Category: <?php echo htmlspecialchars($job['category']); ?></div>
+              <div class="job-salary">Salary: <?php echo htmlspecialchars($job['salary']); ?></div>
+              <div class="job-desc"><?php echo nl2br(htmlspecialchars($job['description'])); ?></div>
+            </div>
+          <?php endforeach;
+        else:
+          echo '<div class="no-jobs">No jobs found.</div>';
+        endif;
+      ?>
+    </div>
+  </div>
+</body>
+</html>
