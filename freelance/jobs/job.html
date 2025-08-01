@@ -14,34 +14,111 @@
     .job-salary { font-size: 15px; color: #388e3c; margin-bottom: 4px; }
     .job-desc { color: #333; }
     .no-jobs { text-align: center; color: #888; margin-top: 40px; }
+    .apply-btn { background: #1f4a40; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    .apply-btn:hover { background: #0277bd; }
+    .loading { text-align: center; color: #888; margin-top: 40px; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Browse Jobs</h2>
-    <div class="job-list">
-      <?php
-        $file = '../jobs.json';
-        if (file_exists($file)) {
-          $json = file_get_contents($file);
-          $jobs = json_decode($json, true);
-        } else {
-          $jobs = [];
-        }
-        if ($jobs && count($jobs) > 0):
-          foreach ($jobs as $job): ?>
-            <div class="job-item">
-              <div class="job-title"><?php echo htmlspecialchars($job['title']); ?></div>
-              <div class="job-category">Category: <?php echo htmlspecialchars($job['category']); ?></div>
-              <div class="job-salary">Salary: <?php echo htmlspecialchars($job['salary']); ?></div>
-              <div class="job-desc"><?php echo nl2br(htmlspecialchars($job['description'])); ?></div>
-            </div>
-          <?php endforeach;
-        else:
-          echo '<div class="no-jobs">No jobs found.</div>';
-        endif;
-      ?>
+    <div class="job-list" id="jobList">
+      <div class="loading">Loading jobs...</div>
     </div>
   </div>
+
+  <script type="module" src="../firebase-config.js"></script>
+  <script type="module" src="../auth.js"></script>
+  <script type="module">
+    // Load jobs from Firebase
+    async function loadJobs() {
+      try {
+        const jobsSnapshot = await getDocs(collection(db, "jobs"));
+        const jobs = [];
+        jobsSnapshot.forEach((doc) => {
+          const jobData = doc.data();
+          if (!jobData.deleted) { // Only show non-deleted jobs
+            jobs.push({ id: doc.id, ...jobData });
+          }
+        });
+
+        const jobList = document.getElementById('jobList');
+        
+        if (jobs.length === 0) {
+          jobList.innerHTML = '<div class="no-jobs">No jobs found.</div>';
+          return;
+        }
+
+        jobList.innerHTML = jobs.map(job => `
+          <div class="job-item">
+            <div class="job-title">${job.title}</div>
+            <div class="job-category">Category: ${job.category}</div>
+            <div class="job-salary">Salary: ${job.salary}</div>
+            <div class="job-desc">${job.description}</div>
+            ${window.authManager && window.authManager.isLoggedIn() && window.authManager.getUserProfile()?.userType === 'employee' ? 
+              `<button class="apply-btn" onclick="applyForJob('${job.id}')">Apply</button>` : 
+              '<p><em>Please <a href="../loginpage.html">login</a> as an employee to apply for jobs.</em></p>'
+            }
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+        document.getElementById('jobList').innerHTML = '<div class="no-jobs">Error loading jobs.</div>';
+      }
+    }
+
+    // Apply for job function
+    window.applyForJob = async function(jobId) {
+      if (!window.authManager || !window.authManager.isLoggedIn()) {
+        alert('Please login to apply for jobs.');
+        return;
+      }
+
+      try {
+        // Get job details
+        const jobDoc = await getDoc(doc(db, "jobs", jobId));
+        if (!jobDoc.exists()) {
+          alert('Job not found.');
+          return;
+        }
+
+        const jobData = jobDoc.data();
+        const currentUser = window.authManager.getCurrentUser();
+        const userProfile = window.authManager.getUserProfile();
+        
+        // Check if already applied
+        const existingApplication = await getDocs(
+          query(collection(db, "applications"), 
+            where("jobId", "==", jobId),
+            where("employeeId", "==", currentUser.uid))
+        );
+
+        if (!existingApplication.empty) {
+          alert('You have already applied for this job.');
+          return;
+        }
+
+        // Create application
+        const applicationData = {
+          jobId: jobId,
+          jobTitle: jobData.title,
+          employeeId: currentUser.uid,
+          employeeName: userProfile.name,
+          employeeEmail: currentUser.email,
+          status: 'pending',
+          appliedAt: new Date()
+        };
+
+        await addDoc(collection(db, "applications"), applicationData);
+        alert('Application submitted successfully!');
+      } catch (error) {
+        console.error('Error applying for job:', error);
+        alert('Error applying for job. Please try again.');
+      }
+    };
+
+    // Load jobs when page loads
+    document.addEventListener('DOMContentLoaded', loadJobs);
+  </script>
 </body>
 </html>
