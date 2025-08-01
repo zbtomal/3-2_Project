@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Auth Manager - JSTACK</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-box { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .info { background: #e3f2fd; color: #1565c0; }
+        button { margin: 5px; padding: 10px; background: #1f4a40; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .status { margin: 10px 0; padding: 10px; background: white; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>Debug Auth Manager</h1>
+    
+    <div class="debug-box">
+        <h3>Auth Manager Status</h3>
+        <button onclick="checkAuthManager()">Check Auth Manager</button>
+        <button onclick="checkFirebase()">Check Firebase</button>
+        <button onclick="checkScripts()">Check Scripts</button>
+        <div id="status">Click buttons to check status</div>
+    </div>
+    
+    <div class="debug-box">
+        <h3>Console Logs</h3>
+        <div id="consoleLogs">No logs yet</div>
+    </div>
+
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module">
+        // Capture console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const logsDiv = document.getElementById('consoleLogs');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logsDiv.innerHTML += '<div class="status info">LOG: ' + args.join(' ') + '</div>';
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            logsDiv.innerHTML += '<div class="status error">ERROR: ' + args.join(' ') + '</div>';
+        };
+        
+        // Check auth manager
+        window.checkAuthManager = function() {
+            const status = document.getElementById('status');
+            status.innerHTML = '';
+            
+            const authStatus = document.createElement('div');
+            authStatus.className = 'status';
+            
+            if (window.authManager) {
+                authStatus.innerHTML = '<span class="success">✅ Auth Manager is available</span>';
+                authStatus.innerHTML += '<br><strong>Methods:</strong> ' + Object.getOwnPropertyNames(Object.getPrototypeOf(window.authManager)).join(', ');
+            } else {
+                authStatus.innerHTML = '<span class="error">❌ Auth Manager is not available</span>';
+            }
+            
+            status.appendChild(authStatus);
+        };
+        
+        // Check Firebase
+        window.checkFirebase = function() {
+            const status = document.getElementById('status');
+            status.innerHTML = '';
+            
+            const firebaseStatus = document.createElement('div');
+            firebaseStatus.className = 'status';
+            
+            if (window.auth) {
+                firebaseStatus.innerHTML = '<span class="success">✅ Firebase Auth is available</span>';
+            } else {
+                firebaseStatus.innerHTML = '<span class="error">❌ Firebase Auth is not available</span>';
+            }
+            
+            if (window.db) {
+                firebaseStatus.innerHTML += '<br><span class="success">✅ Firebase Firestore is available</span>';
+            } else {
+                firebaseStatus.innerHTML += '<br><span class="error">❌ Firebase Firestore is not available</span>';
+            }
+            
+            status.appendChild(firebaseStatus);
+        };
+        
+        // Check scripts
+        window.checkScripts = function() {
+            const status = document.getElementById('status');
+            status.innerHTML = '';
+            
+            const scriptStatus = document.createElement('div');
+            scriptStatus.className = 'status';
+            
+            // Check if scripts are loaded
+            const scripts = document.querySelectorAll('script[src]');
+            let firebaseConfigLoaded = false;
+            let authLoaded = false;
+            
+            scripts.forEach(script => {
+                if (script.src.includes('firebase-config.js')) {
+                    firebaseConfigLoaded = true;
+                }
+                if (script.src.includes('auth.js')) {
+                    authLoaded = true;
+                }
+            });
+            
+            if (firebaseConfigLoaded) {
+                scriptStatus.innerHTML = '<span class="success">✅ firebase-config.js is loaded</span>';
+            } else {
+                scriptStatus.innerHTML = '<span class="error">❌ firebase-config.js is not loaded</span>';
+            }
+            
+            if (authLoaded) {
+                scriptStatus.innerHTML += '<br><span class="success">✅ auth.js is loaded</span>';
+            } else {
+                scriptStatus.innerHTML += '<br><span class="error">❌ auth.js is not loaded</span>';
+            }
+            
+            status.appendChild(scriptStatus);
+        };
+        
+        console.log('Debug auth page loaded');
+        
+        // Auto-check after a delay
+        setTimeout(() => {
+            console.log('Auto-checking auth manager...');
+            checkAuthManager();
+            checkFirebase();
+            checkScripts();
+        }, 2000);
+    </script>
+</body>
+</html> 

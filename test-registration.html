@@ -18,6 +18,7 @@
     
     <div class="test-box">
         <h3>Step-by-Step Registration Test</h3>
+        <button onclick="testAuthManager()">Test Auth Manager</button>
         <button onclick="testFullRegistration()">Test Complete Registration Flow</button>
         <button onclick="testLoginFlow()">Test Login Flow</button>
         <button onclick="goToDashboard()">Go to Dashboard</button>
@@ -35,15 +36,55 @@
         let testUser = null;
         let testProfile = null;
         
+        // Test auth manager
+        window.testAuthManager = async function() {
+            const status = document.getElementById('testStatus');
+            status.innerHTML = 'Testing auth manager...';
+            
+            try {
+                await waitForAuthManager();
+                
+                if (window.authManager) {
+                    status.innerHTML = '<span class="success">✅ Auth manager is ready!</span>';
+                    console.log('Auth manager:', window.authManager);
+                } else {
+                    status.innerHTML = '<span class="error">❌ Auth manager not found</span>';
+                }
+            } catch (error) {
+                status.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+            }
+        };
+        
+        // Wait for auth manager to be ready
+        function waitForAuthManager() {
+            return new Promise((resolve) => {
+                const checkAuthManager = () => {
+                    if (window.authManager) {
+                        console.log('Auth manager is ready');
+                        resolve();
+                    } else {
+                        console.log('Auth manager not ready, waiting...');
+                        setTimeout(checkAuthManager, 100);
+                    }
+                };
+                checkAuthManager();
+            });
+        }
+        
         // Test complete registration flow
         window.testFullRegistration = async function() {
             const status = document.getElementById('testStatus');
             const results = document.getElementById('testResults');
             
-            status.innerHTML = 'Testing complete registration flow...';
+            status.innerHTML = 'Waiting for auth manager...';
             results.innerHTML = '';
             
             try {
+                // Wait for auth manager to be ready
+                await waitForAuthManager();
+                
+                status.innerHTML = 'Testing complete registration flow...';
+                
                 // Step 1: Register user
                 const step1 = document.createElement('div');
                 step1.className = 'step';
@@ -105,12 +146,16 @@
             const status = document.getElementById('testStatus');
             const results = document.getElementById('testResults');
             
-            if (!testUser) {
-                status.innerHTML = '<span class="error">❌ No test user. Please register first.</span>';
-                return;
-            }
-            
-            status.innerHTML = 'Testing login flow...';
+            try {
+                // Wait for auth manager to be ready
+                await waitForAuthManager();
+                
+                if (!testUser) {
+                    status.innerHTML = '<span class="error">❌ No test user. Please register first.</span>';
+                    return;
+                }
+                
+                status.innerHTML = 'Testing login flow...';
             
             const step1 = document.createElement('div');
             step1.className = 'step';
@@ -150,24 +195,31 @@
         };
         
         // Go to dashboard
-        window.goToDashboard = function() {
+        window.goToDashboard = async function() {
             const status = document.getElementById('testStatus');
             
-            if (!window.authManager.isLoggedIn()) {
-                status.innerHTML = '<span class="error">❌ Not logged in. Please register/login first.</span>';
-                return;
+            try {
+                // Wait for auth manager to be ready
+                await waitForAuthManager();
+                
+                if (!window.authManager.isLoggedIn()) {
+                    status.innerHTML = '<span class="error">❌ Not logged in. Please register/login first.</span>';
+                    return;
+                }
+                
+                const profile = window.authManager.getUserProfile();
+                if (!profile) {
+                    status.innerHTML = '<span class="error">❌ No profile loaded. This might cause dashboard issues.</span>';
+                    return;
+                }
+                
+                status.innerHTML = '<span class="success">✅ Navigating to dashboard...</span>';
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+            } catch (error) {
+                status.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
             }
-            
-            const profile = window.authManager.getUserProfile();
-            if (!profile) {
-                status.innerHTML = '<span class="error">❌ No profile loaded. This might cause dashboard issues.</span>';
-                return;
-            }
-            
-            status.innerHTML = '<span class="success">✅ Navigating to dashboard...</span>';
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1000);
         };
         
         console.log('Test registration page loaded');
