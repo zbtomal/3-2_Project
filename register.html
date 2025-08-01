@@ -132,14 +132,22 @@
             await authManager.loadUserProfile(result.user.uid);
             showMessage('Profile loaded! Redirecting to dashboard...', 'success');
             
-            setTimeout(() => {
-              window.location.href = 'dashboard.html';
-            }, 1000);
+            // Double-check that profile is loaded
+            const profile = authManager.getUserProfile();
+            if (profile) {
+              console.log('Profile confirmed loaded:', profile);
+              setTimeout(() => {
+                window.location.href = 'dashboard.html';
+              }, 1000);
+            } else {
+              console.error('Profile still not loaded after force load');
+              showMessage('Profile loading issue. Please try logging in.', 'error');
+            }
           } catch (error) {
             console.error('Error loading profile:', error);
             showMessage('Error loading profile. Please try logging in.', 'error');
           }
-        }, 1000);
+        }, 2000); // Increased timeout
       } else {
         showMessage(result.error, 'error');
       }

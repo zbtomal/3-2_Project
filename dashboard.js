@@ -20,7 +20,7 @@ class DashboardManager {
     async waitForAuth() {
         return new Promise((resolve, reject) => {
             let attempts = 0;
-            const maxAttempts = 50; // 5 seconds max wait
+            const maxAttempts = 100; // 10 seconds max wait
             
             const checkAuth = () => {
                 attempts++;
@@ -63,10 +63,12 @@ class DashboardManager {
                                     setTimeout(checkAuth, 1000);
                                 });
                         } else {
+                            console.log("No current user, retrying...");
                             setTimeout(checkAuth, 500);
                         }
                     }
                 } else {
+                    console.log("Auth manager not ready or user not logged in, retrying...");
                     setTimeout(checkAuth, 100);
                 }
             };

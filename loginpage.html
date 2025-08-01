@@ -93,13 +93,30 @@
       
       if (result.success) {
         console.log('Login successful, user:', result.user);
-        showMessage('Login successful! Redirecting to dashboard...', 'success');
+        showMessage('Login successful! Loading profile...', 'success');
         
-        // Wait a bit for auth state to update
-        setTimeout(() => {
-          console.log('Redirecting to dashboard...');
-          window.location.href = 'dashboard.html';
-        }, 1000);
+        // Wait for auth state to update and profile to load
+        setTimeout(async () => {
+          try {
+            console.log('Loading user profile...');
+            await authManager.loadUserProfile(result.user.uid);
+            
+            const profile = authManager.getUserProfile();
+            if (profile) {
+              console.log('Profile loaded successfully:', profile);
+              showMessage('Profile loaded! Redirecting to dashboard...', 'success');
+              setTimeout(() => {
+                window.location.href = 'dashboard.html';
+              }, 1000);
+            } else {
+              console.error('Profile not loaded after login');
+              showMessage('Profile loading issue. Please try again.', 'error');
+            }
+          } catch (error) {
+            console.error('Error loading profile after login:', error);
+            showMessage('Error loading profile. Please try again.', 'error');
+          }
+        }, 2000); // Increased timeout
       } else {
         console.error('Login failed:', result.error);
         showMessage(result.error, 'error');

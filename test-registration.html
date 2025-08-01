@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Registration Flow - JSTACK</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-box { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        button { margin: 5px; padding: 10px; background: #1f4a40; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .step { margin: 10px 0; padding: 10px; background: white; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>Test Registration Flow</h1>
+    
+    <div class="test-box">
+        <h3>Step-by-Step Registration Test</h3>
+        <button onclick="testFullRegistration()">Test Complete Registration Flow</button>
+        <button onclick="testLoginFlow()">Test Login Flow</button>
+        <button onclick="goToDashboard()">Go to Dashboard</button>
+        <div id="testStatus">Click buttons to test</div>
+    </div>
+    
+    <div class="test-box">
+        <h3>Test Results</h3>
+        <div id="testResults">No tests run yet</div>
+    </div>
+
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module">
+        let testUser = null;
+        let testProfile = null;
+        
+        // Test complete registration flow
+        window.testFullRegistration = async function() {
+            const status = document.getElementById('testStatus');
+            const results = document.getElementById('testResults');
+            
+            status.innerHTML = 'Testing complete registration flow...';
+            results.innerHTML = '';
+            
+            try {
+                // Step 1: Register user
+                const step1 = document.createElement('div');
+                step1.className = 'step';
+                step1.innerHTML = '<strong>Step 1:</strong> Registering user...';
+                results.appendChild(step1);
+                
+                const testEmail = `test${Date.now()}@example.com`;
+                const userData = {
+                    name: 'Test User',
+                    phone: '1234567890',
+                    userType: 'employer'
+                };
+                
+                const result = await window.authManager.registerUser(testEmail, 'password123', userData);
+                
+                if (result.success) {
+                    testUser = result.user;
+                    step1.innerHTML = '<strong>Step 1:</strong> ✅ Registration successful! User: ' + testUser.email;
+                    
+                    // Step 2: Check if profile is loaded
+                    const step2 = document.createElement('div');
+                    step2.className = 'step';
+                    step2.innerHTML = '<strong>Step 2:</strong> Checking profile...';
+                    results.appendChild(step2);
+                    
+                    const profile = window.authManager.getUserProfile();
+                    if (profile) {
+                        testProfile = profile;
+                        step2.innerHTML = '<strong>Step 2:</strong> ✅ Profile loaded! Type: ' + profile.userType;
+                    } else {
+                        step2.innerHTML = '<strong>Step 2:</strong> ❌ Profile not loaded';
+                    }
+                    
+                    // Step 3: Check auth state
+                    const step3 = document.createElement('div');
+                    step3.className = 'step';
+                    step3.innerHTML = '<strong>Step 3:</strong> Checking auth state...';
+                    results.appendChild(step3);
+                    
+                    const isLoggedIn = window.authManager.isLoggedIn();
+                    if (isLoggedIn) {
+                        step3.innerHTML = '<strong>Step 3:</strong> ✅ User is logged in';
+                    } else {
+                        step3.innerHTML = '<strong>Step 3:</strong> ❌ User is not logged in';
+                    }
+                    
+                    status.innerHTML = '<span class="success">✅ Registration flow completed!</span>';
+                } else {
+                    step1.innerHTML = '<strong>Step 1:</strong> ❌ Registration failed: ' + result.error;
+                    status.innerHTML = '<span class="error">❌ Registration failed</span>';
+                }
+            } catch (error) {
+                status.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+            }
+        };
+        
+        // Test login flow
+        window.testLoginFlow = async function() {
+            const status = document.getElementById('testStatus');
+            const results = document.getElementById('testResults');
+            
+            if (!testUser) {
+                status.innerHTML = '<span class="error">❌ No test user. Please register first.</span>';
+                return;
+            }
+            
+            status.innerHTML = 'Testing login flow...';
+            
+            const step1 = document.createElement('div');
+            step1.className = 'step';
+            step1.innerHTML = '<strong>Login Step 1:</strong> Logging in...';
+            results.appendChild(step1);
+            
+            try {
+                const result = await window.authManager.loginUser(testUser.email, 'password123');
+                
+                if (result.success) {
+                    step1.innerHTML = '<strong>Login Step 1:</strong> ✅ Login successful!';
+                    
+                    // Check profile after login
+                    const step2 = document.createElement('div');
+                    step2.className = 'step';
+                    step2.innerHTML = '<strong>Login Step 2:</strong> Checking profile after login...';
+                    results.appendChild(step2);
+                    
+                    setTimeout(async () => {
+                        const profile = window.authManager.getUserProfile();
+                        if (profile) {
+                            step2.innerHTML = '<strong>Login Step 2:</strong> ✅ Profile loaded after login! Type: ' + profile.userType;
+                        } else {
+                            step2.innerHTML = '<strong>Login Step 2:</strong> ❌ Profile not loaded after login';
+                        }
+                    }, 1000);
+                    
+                    status.innerHTML = '<span class="success">✅ Login flow completed!</span>';
+                } else {
+                    step1.innerHTML = '<strong>Login Step 1:</strong> ❌ Login failed: ' + result.error;
+                    status.innerHTML = '<span class="error">❌ Login failed</span>';
+                }
+            } catch (error) {
+                step1.innerHTML = '<strong>Login Step 1:</strong> ❌ Error: ' + error.message;
+                status.innerHTML = '<span class="error">❌ Login error</span>';
+            }
+        };
+        
+        // Go to dashboard
+        window.goToDashboard = function() {
+            const status = document.getElementById('testStatus');
+            
+            if (!window.authManager.isLoggedIn()) {
+                status.innerHTML = '<span class="error">❌ Not logged in. Please register/login first.</span>';
+                return;
+            }
+            
+            const profile = window.authManager.getUserProfile();
+            if (!profile) {
+                status.innerHTML = '<span class="error">❌ No profile loaded. This might cause dashboard issues.</span>';
+                return;
+            }
+            
+            status.innerHTML = '<span class="success">✅ Navigating to dashboard...</span>';
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1000);
+        };
+        
+        console.log('Test registration page loaded');
+    </script>
+</body>
+</html> 
