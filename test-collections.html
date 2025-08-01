@@ -29,9 +29,82 @@
         <div id="collectionStatus">Click "Check All Collections" to see status</div>
     </div>
 
-    <script type="module" src="firebase-config.js"></script>
-    <script type="module" src="auth.js"></script>
     <script type="module">
+        // Import Firebase functions
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCnuedaZrRn7Zpx1SrDFs53jMYvxzfNOyo",
+            authDomain: "freelance-f5e40.firebaseapp.com",
+            projectId: "freelance-f5e40",
+            storageBucket: "freelance-f5e40.firebasestorage.app",
+            messagingSenderId: "1048409804135",
+            appId: "1:1048409804135:web:38beba66fdab0f4beef3c2",
+            measurementId: "G-S9934VZEY7"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // AuthManager class for testing
+        class TestAuthManager {
+            constructor() {
+                this.currentUser = null;
+                this.userProfile = null;
+            }
+
+            async registerUser(email, password, userData) {
+                try {
+                    console.log("Starting registration for:", email);
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+                    
+                    console.log("User created, saving profile to Firestore...");
+                    
+                    // Determine which collection to save to based on user type
+                    const collectionName = userData.userType === 'employer' ? 'employers' : 'employees';
+                    
+                    // Save additional user data to Firestore
+                    const userDocRef = await addDoc(collection(db, collectionName), {
+                        uid: user.uid,
+                        email: email,
+                        name: userData.name,
+                        phone: userData.phone,
+                        userType: userData.userType,
+                        createdAt: new Date(),
+                        ...userData
+                    });
+                    
+                    console.log(`Profile saved to ${collectionName} collection with ID:`, userDocRef.id);
+                    
+                    // Also save to users collection for general access
+                    await addDoc(collection(db, "users"), {
+                        uid: user.uid,
+                        email: email,
+                        name: userData.name,
+                        phone: userData.phone,
+                        userType: userData.userType,
+                        createdAt: new Date(),
+                        ...userData
+                    });
+                    
+                    console.log("Profile also saved to users collection");
+                    
+                    return { success: true, user };
+                } catch (error) {
+                    console.error("Registration error:", error);
+                    return { success: false, error: error.message };
+                }
+            }
+        }
+
+        // Initialize test auth manager
+        const testAuthManager = new TestAuthManager();
         let testUsers = [];
         
         // Test employer registration
@@ -47,7 +120,7 @@
                     userType: 'employer'
                 };
                 
-                const result = await window.authManager.registerUser(testEmail, 'password123', userData);
+                const result = await testAuthManager.registerUser(testEmail, 'password123', userData);
                 
                 if (result.success) {
                     testUsers.push({ type: 'employer', user: result.user });
@@ -73,7 +146,7 @@
                     userType: 'employee'
                 };
                 
-                const result = await window.authManager.registerUser(testEmail, 'password123', userData);
+                const result = await testAuthManager.registerUser(testEmail, 'password123', userData);
                 
                 if (result.success) {
                     testUsers.push({ type: 'employee', user: result.user });
@@ -125,7 +198,7 @@
             }
         };
         
-        console.log('Test collections page loaded');
+        console.log('Test collections page loaded with Firebase imports');
     </script>
 </body>
 </html> 
