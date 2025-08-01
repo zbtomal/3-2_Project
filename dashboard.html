@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - JSTACK</title>
+    <link rel="stylesheet" href="style.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .dashboard-header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .dashboard-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .job-form {
+            display: none;
+        }
+        
+        .job-form.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .btn {
+            background: #1f4a40;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background: #0277bd;
+        }
+        
+        .job-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .job-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        
+        .application-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        
+        .status-pending {
+            color: #f39c12;
+        }
+        
+        .status-accepted {
+            color: #27ae60;
+        }
+        
+        .status-rejected {
+            color: #e74c3c;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div id="navbar" class="obj-width">
+            <a href="index.html"> <img class="logo" src="images/logo.png" alt=""></a>
+            <ul id="menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="jobs/job.html">Browse Jobs</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="dashboard.html"><button id="w-btn">Dashboard</button></a></li>
+            </ul>
+            <i id="bar" class='bx bx-menu'></i>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>Welcome to Your Dashboard</h1>
+            <p id="userInfo">Loading user information...</p>
+        </div>
+
+        <div class="dashboard-content">
+            <!-- Employee Dashboard -->
+            <div id="employeeDashboard" style="display: none;">
+                <div class="dashboard-card">
+                    <h3>Available Jobs</h3>
+                    <div id="availableJobs" class="loading">Loading jobs...</div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <h3>My Applications</h3>
+                    <div id="myApplications" class="loading">Loading applications...</div>
+                </div>
+            </div>
+
+            <!-- Employer Dashboard -->
+            <div id="employerDashboard" style="display: none;">
+                <div class="dashboard-card">
+                    <h3>Post New Job</h3>
+                    <button class="btn" onclick="toggleJobForm()">Post Job</button>
+                    
+                    <form id="jobForm" class="job-form">
+                        <div class="form-group">
+                            <label for="jobTitle">Job Title</label>
+                            <input type="text" id="jobTitle" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="jobDescription">Description</label>
+                            <textarea id="jobDescription" rows="4" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="jobSalary">Salary Range</label>
+                            <input type="text" id="jobSalary" placeholder="e.g., $500-1000/month" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="jobCategory">Category</label>
+                            <select id="jobCategory" required>
+                                <option value="">Select Category</option>
+                                <option value="Full Time">Full Time</option>
+                                <option value="Part Time">Part Time</option>
+                                <option value="Freelancer">Freelancer</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn">Post Job</button>
+                    </form>
+                </div>
+                
+                <div class="dashboard-card">
+                    <h3>My Posted Jobs</h3>
+                    <div id="postedJobs" class="loading">Loading posted jobs...</div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <h3>Job Applications</h3>
+                    <div id="jobApplications" class="loading">Loading applications...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="dashboard.js"></script>
+    <script src="toggle.js"></script>
+</body>
+</html> 

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>JSTACK - Search Jobs</title>
+        <link rel="stylesheet" href="../style.css">
+        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+    </head>
+
+    <body>
+
+        <!-- Header  Section-->
+<header>
+    <div id="navbar" class ="obj-width">
+        <a href="../index.html"> <img class="logo"
+             src="../images/logo.png" alt=""></a>
+
+         <ul id="menu">
+            <li><a href="../index.html">Home</a></li>
+            <li><a href="../jobs/job.html">Browse Jobs</a></li>
+            <li><a href="../contact.html">Contact</a></li>
+            <li><a href="loginpage.html"><button id="w-btn">Join</button></a></li>
+         </ul>   
+         <i id="bar" class='bx bx-menu'></i>
+    </div>
+</header>
+
+
+
+<div id="jobDetails" class="extra-space obj-width">
+   <!-- <div class="job-header">
+    <div class="job-img-row">
+        <img src="../images/google.png" alt="">
+        <div>
+            <h2>Google</h2>
+            <span>USA</span>
+        </div>
+    </div>
+    <a id="g-btn" href="#"> Apply Now</a>
+   </div>
+
+
+        <div class="features sec-space obj-width">
+         
+         <div class="fe-box">
+            <div>
+                <img src="../images/vacancy.png" alt="">
+                <h3>Vacancy</h3>
+                <p>01 Vacancy</p>
+            </div>
+             <div>
+                <img src="../images/fe 1.png" alt="">
+                <h3>Position</h3>
+                <p>Web Developer</p>
+            </div>
+             <div>
+                <img src="../images/hour.png" alt="">
+                <h3>Hours</h3>
+                <p>40 hours/week</p>
+            </div>
+             <div>
+                <img src="../images/salary.png" alt="">
+                <h3>salary</h3>
+                <p>$900-1200/m</p>
+            </div>
+         </div>
+        </div>
+<div class="job-description sec-space">
+<h3>Job Description</h3>
+<p>We are looking for a skilled Web Developer to join our team at Google. The ideal candidate will have experience in building responsive web applications and a strong understanding of front-end technologies.</p>
+<h3>Employer Status</h3>
+<p>-Full Time</p>
+<h3>Workplace</h3>
+<p>-work from home</p>
+<h3>Education Requirement</h3>
+<p>-Bachelor's degree in Computer Science or related field</p>
+<h3>Experience Requirement</h3>
+<p>-2+ years of experience in web development</p>
+
+</div> -->
+</div>
+
+
+
+
+        <!-- Footer  Section-->
+<footer class="footer">
+    <div class="obj-width">
+        <div class="top">
+            <div>
+                <img src="../images/logo.png" alt="">
+                <p>Search your describe job.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded",() => {
+const urlParam=new URLSearchParams(window.location.search);
+const index=urlParam.get("id");
+const selectJob=jCategory[index];
+
+const jobDetailsContainer=document.getElementById("jobDetails");
+
+jobDetailsContainer.innerHTML=`
+
+<div class="job-header">
+    <div class="job-img-row">
+        <img src=${selectJob.image} alt="">
+        <div>
+            <h2>${selectJob.companyName}</h2>
+            <span>${selectJob.location}</span>
+        </div>
+    </div>
+    <a id="g-btn" href="#"> Apply Now</a>
+   </div>
+
+
+        <div class="features  obj-width">
+         
+         <div class="fe-box">
+            <div>
+                <img src="../images/vacancy.png" alt="">
+                <h3>Vacancy</h3>
+                <p>${selectJob.vacancy}</p>
+            </div>
+             <div>
+                <img src="../images/fe 1.png" alt="">
+                <h3>Position</h3>
+                <p>${selectJob.title}</p>
+            </div>
+             <div>
+                <img src="../images/hour.png" alt="">
+                <h3>Hours</h3>
+                <p>${selectJob.hours}</p>
+            </div>
+             <div>
+                <img src="../images/salary.png" alt="">
+                <h3>salary</h3>
+                <p>${selectJob.rate}</p>
+            </div>
+         </div>
+        </div>
+<div class="job-description sec-space">
+<h3>Job Description</h3>
+<p>
+    ${selectJob.description}
+    </p>
+<h3>Employer Status</h3>
+<p>${selectJob.av}</p>
+<h3>Workplace</h3>
+<p>${selectJob.workplace}</p>
+<h3>Education Requirement</h3>
+<p>${selectJob.education}</p>
+<h3>Experience Requirement</h3>
+<p>${selectJob.experience}</p>
+
+</div>
+
+    `
+});
+</script>
+
+
+     <script src="job-list.js"></script>
+        <script src="../toggle.js"></script>
+        <script src="jobSearch.js"></script>
+    </body>
+
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Our Team</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* Your full CSS remains unchanged — keeping same layout */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    .contactprofile-section {
+      padding: 4rem 1rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .team-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .team-tabs button {
+      background-color: #51a995;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .team-tabs button.active {
+      background-color: #3e8b7c;
+    }
+
+    .contactprofile {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .contactprofile-img {
+      flex: 1 1 40%;
+    }
+
+    .contactprofile-img img {
+      width: 100%;
+      border-radius: 15px;
+      object-fit: cover;
+    }
+
+    .contactprofile-form {
+      background: white;
+      flex: 1 1 50%;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .contactprofile-form h2 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #1f4a40;
+    }
+
+    .contactprofile-form label {
+      display: block;
+      margin: 15px 0 5px;
+      font-weight: 500;
+      color: #444;
+    }
+
+    .contactprofile-form input,
+    .contactprofile-form textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .contactprofile-form input:focus,
+    .contactprofile-form textarea:focus {
+      border-color: #51a995;
+    }
+
+    .contactprofile-form textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .contactprofile-form button {
+      margin-top: 20px;
+      padding: 12px 30px;
+      background-color: #51a995;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .contactprofile-form button:hover {
+      background-color: #3e8b7c;
+    }
+
+    @media (max-width: 768px) {
+      .contactprofile {
+        flex-direction: column;
+      }
+
+      .contactprofile-img,
+      .contactprofile-form {
+        width: 100%;
+      }
+
+      .contactprofile-form {
+        padding: 30px 20px;
+      }
+
+      .contactprofile-form h2 {
+        font-size: 1.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="contactprofile-section">
+    <div class="team-tabs">
+      <button class="active" onclick="loadMember('lily')">Lily Porter</button>
+      <button onclick="loadMember('takira')">Takira</button>
+      <button onclick="loadMember('harry')">Harry Porter</button>
+      <button onclick="loadMember('oreo')">Oreo</button>
+    </div>
+
+    <div class="contactprofile">
+      <div class="contactprofile-img">
+        <img id="member-img" src="images/fl-1.png" alt="Team Member" />
+      </div>
+      <form class="contactprofile-form" id="contact-form" action="mailto:lily.porter@example.com" method="POST" enctype="text/plain">
+        <h2 id="form-title">Contact Lily Porter</h2>
+
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" placeholder="Your Name" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" placeholder="your@email.com" required>
+
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" placeholder="Write your message here..." required></textarea>
+
+        <button type="submit">Send Message</button>
+      </form>
+    </div>
+  </section>
+
+  <script>
+    const teamData = {
+      lily: {
+        name: "Lily Porter",
+        email: "lily.porter@example.com",
+        image: "images/fl-1.png"
+      },
+      takira: {
+        name: "Takira",
+        email: "takira@example.com",
+        image: "images/fl-2.png"
+      },
+      harry: {
+        name: "Harry Porter",
+        email: "harry.porter@example.com",
+        image: "images/fl-3.png"
+      },
+      oreo: {
+        name: "Oreo",
+        email: "oreo@example.com",
+        image: "images/fl-4.png"
+      }
+    };
+
+    function loadMember(memberKey) {
+      const member = teamData[memberKey];
+      document.getElementById("form-title").innerText = `Contact ${member.name}`;
+      document.getElementById("contact-form").action = `mailto:${member.email}`;
+      document.getElementById("member-img").src = member.image;
+
+      // Set active tab
+      document.querySelectorAll(".team-tabs button").forEach(btn => btn.classList.remove("active"));
+      event.target.classList.add("active");
+    }
+  </script>
+
+</body>
+</html>
