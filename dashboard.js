@@ -44,22 +44,22 @@ class DashboardManager {
                         console.log("User profile found, resolving dashboard");
                         resolve();
                     } else {
-                        // If profile is not loaded yet, try to force load it
+                        // If profile is not loaded yet, try to ensure it's loaded
                         if (this.currentUser) {
-                            console.log("Profile not loaded, attempting to force load...");
-                            window.authManager.forceLoadUserProfile(this.currentUser.uid)
+                            console.log("Profile not loaded, attempting to ensure load...");
+                            window.authManager.ensureProfileLoaded()
                                 .then((profile) => {
                                     if (profile) {
                                         this.userProfile = profile;
-                                        console.log("Profile force loaded successfully");
+                                        console.log("Profile ensure loaded successfully");
                                         resolve();
                                     } else {
-                                        console.log("Force load failed, retrying...");
+                                        console.log("Ensure load failed, retrying...");
                                         setTimeout(checkAuth, 1000);
                                     }
                                 })
                                 .catch((error) => {
-                                    console.error("Error force loading profile:", error);
+                                    console.error("Error ensure loading profile:", error);
                                     setTimeout(checkAuth, 1000);
                                 });
                         } else {

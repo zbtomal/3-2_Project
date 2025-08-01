@@ -128,19 +128,16 @@
         // Wait for the user profile to be loaded
         setTimeout(async () => {
           try {
-            // Force reload the user profile
-            await authManager.loadUserProfile(result.user.uid);
-            showMessage('Profile loaded! Redirecting to dashboard...', 'success');
-            
-            // Double-check that profile is loaded
-            const profile = authManager.getUserProfile();
+            // Ensure profile is loaded
+            const profile = await authManager.ensureProfileLoaded();
             if (profile) {
+              showMessage('Profile loaded! Redirecting to dashboard...', 'success');
               console.log('Profile confirmed loaded:', profile);
               setTimeout(() => {
                 window.location.href = 'dashboard.html';
               }, 1000);
             } else {
-              console.error('Profile still not loaded after force load');
+              console.error('Profile still not loaded after ensure load');
               showMessage('Profile loading issue. Please try logging in.', 'error');
             }
           } catch (error) {

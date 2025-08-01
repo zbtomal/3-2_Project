@@ -98,10 +98,9 @@
         // Wait for auth state to update and profile to load
         setTimeout(async () => {
           try {
-            console.log('Loading user profile...');
-            await authManager.loadUserProfile(result.user.uid);
+            console.log('Ensuring profile is loaded...');
+            const profile = await authManager.ensureProfileLoaded();
             
-            const profile = authManager.getUserProfile();
             if (profile) {
               console.log('Profile loaded successfully:', profile);
               showMessage('Profile loaded! Redirecting to dashboard...', 'success');

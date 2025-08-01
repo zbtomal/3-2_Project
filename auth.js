@@ -6,17 +6,25 @@ class AuthManager {
     }
 
     init() {
+        console.log("AuthManager initializing...");
+        
         // Listen for auth state changes
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
+            console.log("Auth state changed:", user ? user.email : "No user");
+            
             if (user) {
                 this.currentUser = user;
-                this.loadUserProfile(user.uid);
+                console.log("Loading profile for user:", user.uid);
+                await this.loadUserProfile(user.uid);
                 this.updateUIForLoggedInUser();
             } else {
                 this.currentUser = null;
+                this.userProfile = null;
                 this.updateUIForLoggedOutUser();
             }
         });
+        
+        console.log("AuthManager initialized");
     }
 
     async registerUser(email, password, userData) {
@@ -188,7 +196,18 @@ class AuthManager {
 
     async forceLoadUserProfile(uid) {
         console.log("Force loading user profile for UID:", uid);
-        return await this.loadUserProfile(uid);
+        const profile = await this.loadUserProfile(uid);
+        console.log("Force load result:", profile);
+        return profile;
+    }
+    
+    // Method to ensure profile is loaded
+    async ensureProfileLoaded() {
+        if (this.currentUser && !this.userProfile) {
+            console.log("Profile not loaded, forcing load...");
+            return await this.forceLoadUserProfile(this.currentUser.uid);
+        }
+        return this.userProfile;
     }
 }
 
