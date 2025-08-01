@@ -70,11 +70,16 @@ class AuthManager {
             if (!querySnapshot.empty) {
                 const userDoc = querySnapshot.docs[0];
                 this.userProfile = { id: userDoc.id, ...userDoc.data() };
+                console.log("User profile loaded:", this.userProfile);
                 return this.userProfile;
+            } else {
+                console.log("No user profile found for UID:", uid);
+                this.userProfile = null;
+                return null;
             }
-            return null;
         } catch (error) {
             console.error("Error loading user profile:", error);
+            this.userProfile = null;
             return null;
         }
     }

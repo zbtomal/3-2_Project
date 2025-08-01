@@ -87,14 +87,21 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       
+      console.log('Attempting login with:', email);
+      
       const result = await authManager.loginUser(email, password);
       
       if (result.success) {
+        console.log('Login successful, user:', result.user);
         showMessage('Login successful! Redirecting to dashboard...', 'success');
+        
+        // Wait a bit for auth state to update
         setTimeout(() => {
+          console.log('Redirecting to dashboard...');
           window.location.href = 'dashboard.html';
-        }, 2000);
+        }, 1000);
       } else {
+        console.error('Login failed:', result.error);
         showMessage(result.error, 'error');
       }
     });

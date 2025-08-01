@@ -19,7 +19,14 @@ class DashboardManager {
                 if (window.authManager && window.authManager.isLoggedIn()) {
                     this.currentUser = window.authManager.getCurrentUser();
                     this.userProfile = window.authManager.getUserProfile();
-                    resolve();
+                    
+                    // Wait for user profile to be loaded
+                    if (this.userProfile) {
+                        resolve();
+                    } else {
+                        // If profile is not loaded yet, wait a bit more
+                        setTimeout(checkAuth, 500);
+                    }
                 } else {
                     setTimeout(checkAuth, 100);
                 }
@@ -37,7 +44,10 @@ class DashboardManager {
     }
 
     loadDashboard() {
+        console.log('Loading dashboard, userProfile:', this.userProfile);
+        
         if (!this.userProfile) {
+            console.log('No user profile, redirecting to login');
             window.location.href = 'loginpage.html';
             return;
         }
@@ -48,6 +58,8 @@ class DashboardManager {
             this.showEmployeeDashboard();
         } else if (this.userProfile.userType === 'employer') {
             this.showEmployerDashboard();
+        } else {
+            console.error('Unknown user type:', this.userProfile.userType);
         }
     }
 
