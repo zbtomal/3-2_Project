@@ -64,13 +64,14 @@ class AuthManager {
 
     async loadUserProfile(uid) {
         try {
+            console.log("Loading user profile for UID:", uid);
             const q = query(collection(db, "users"), where("uid", "==", uid));
             const querySnapshot = await getDocs(q);
             
             if (!querySnapshot.empty) {
                 const userDoc = querySnapshot.docs[0];
                 this.userProfile = { id: userDoc.id, ...userDoc.data() };
-                console.log("User profile loaded:", this.userProfile);
+                console.log("User profile loaded successfully:", this.userProfile);
                 return this.userProfile;
             } else {
                 console.log("No user profile found for UID:", uid);
@@ -135,6 +136,11 @@ class AuthManager {
 
     getUserProfile() {
         return this.userProfile;
+    }
+
+    async forceLoadUserProfile(uid) {
+        console.log("Force loading user profile for UID:", uid);
+        return await this.loadUserProfile(uid);
     }
 }
 

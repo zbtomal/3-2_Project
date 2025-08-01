@@ -20,12 +20,34 @@ class DashboardManager {
                     this.currentUser = window.authManager.getCurrentUser();
                     this.userProfile = window.authManager.getUserProfile();
                     
+                    console.log("Dashboard auth check - User:", this.currentUser?.email, "Profile:", this.userProfile);
+                    
                     // Wait for user profile to be loaded
                     if (this.userProfile) {
+                        console.log("User profile found, resolving dashboard");
                         resolve();
                     } else {
-                        // If profile is not loaded yet, wait a bit more
-                        setTimeout(checkAuth, 500);
+                        // If profile is not loaded yet, try to force load it
+                        if (this.currentUser) {
+                            console.log("Profile not loaded, attempting to force load...");
+                            window.authManager.forceLoadUserProfile(this.currentUser.uid)
+                                .then((profile) => {
+                                    if (profile) {
+                                        this.userProfile = profile;
+                                        console.log("Profile force loaded successfully");
+                                        resolve();
+                                    } else {
+                                        console.log("Force load failed, retrying...");
+                                        setTimeout(checkAuth, 1000);
+                                    }
+                                })
+                                .catch((error) => {
+                                    console.error("Error force loading profile:", error);
+                                    setTimeout(checkAuth, 1000);
+                                });
+                        } else {
+                            setTimeout(checkAuth, 500);
+                        }
                     }
                 } else {
                     setTimeout(checkAuth, 100);

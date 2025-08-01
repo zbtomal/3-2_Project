@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Test - JSTACK</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        button { margin: 5px; padding: 10px; background: #1f4a40; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>JSTACK Authentication Test</h1>
+    
+    <div class="test-section">
+        <h3>Current Status</h3>
+        <div id="status">Loading...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Actions</h3>
+        <button onclick="testRegistration()">Test Registration</button>
+        <button onclick="testLogin()">Test Login</button>
+        <button onclick="testProfileLoad()">Test Profile Load</button>
+        <button onclick="goToDashboard()">Go to Dashboard</button>
+        <button onclick="clearLogs()">Clear Logs</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Console Logs</h3>
+        <div id="logs" style="background: #000; color: #0f0; padding: 10px; height: 200px; overflow-y: scroll; font-family: monospace;"></div>
+    </div>
+
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module">
+        // Override console.log to capture logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const logsDiv = document.getElementById('logs');
+        
+        function addLog(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.color = type === 'error' ? '#ff6b6b' : '#0f0';
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog(args.join(' '), 'error');
+        };
+        
+        function updateStatus() {
+            const statusDiv = document.getElementById('status');
+            if (window.authManager) {
+                const isLoggedIn = window.authManager.isLoggedIn();
+                const currentUser = window.authManager.getCurrentUser();
+                const profile = window.authManager.getUserProfile();
+                
+                statusDiv.innerHTML = `
+                    <p><strong>Auth Manager:</strong> ${window.authManager ? 'Loaded' : 'Not Loaded'}</p>
+                    <p><strong>Logged In:</strong> ${isLoggedIn}</p>
+                    <p><strong>Current User:</strong> ${currentUser ? currentUser.email : 'None'}</p>
+                    <p><strong>User UID:</strong> ${currentUser ? currentUser.uid : 'None'}</p>
+                    <p><strong>Profile Loaded:</strong> ${profile ? 'Yes' : 'No'}</p>
+                    <p><strong>Profile Data:</strong> ${profile ? JSON.stringify(profile, null, 2) : 'None'}</p>
+                `;
+            } else {
+                statusDiv.innerHTML = '<p class="error">Auth Manager not initialized</p>';
+            }
+        }
+        
+        // Update status every 2 seconds
+        setInterval(updateStatus, 2000);
+        updateStatus();
+        
+        // Global test functions
+        window.testRegistration = async function() {
+            try {
+                console.log('Testing registration...');
+                const testEmail = `test${Date.now()}@example.com`;
+                const userData = {
+                    name: 'Test User',
+                    phone: '1234567890',
+                    userType: 'employer'
+                };
+                
+                const result = await window.authManager.registerUser(testEmail, 'password123', userData);
+                console.log('Registration result:', result);
+                
+                if (result.success) {
+                    console.log('Registration successful, testing profile load...');
+                    await window.authManager.forceLoadUserProfile(result.user.uid);
+                    updateStatus();
+                }
+            } catch (error) {
+                console.error('Registration test error:', error);
+            }
+        };
+        
+        window.testLogin = async function() {
+            try {
+                console.log('Testing login...');
+                const result = await window.authManager.loginUser('test@example.com', 'password123');
+                console.log('Login result:', result);
+                updateStatus();
+            } catch (error) {
+                console.error('Login test error:', error);
+            }
+        };
+        
+        window.testProfileLoad = async function() {
+            try {
+                console.log('Testing profile load...');
+                const currentUser = window.authManager.getCurrentUser();
+                if (currentUser) {
+                    const profile = await window.authManager.forceLoadUserProfile(currentUser.uid);
+                    console.log('Profile load result:', profile);
+                    updateStatus();
+                } else {
+                    console.log('No current user to load profile for');
+                }
+            } catch (error) {
+                console.error('Profile load test error:', error);
+            }
+        };
+        
+        window.goToDashboard = function() {
+            console.log('Navigating to dashboard...');
+            window.location.href = 'dashboard.html';
+        };
+        
+        window.clearLogs = function() {
+            logsDiv.innerHTML = '';
+        };
+        
+        console.log('Auth test page loaded');
+    </script>
+</body>
+</html> 
