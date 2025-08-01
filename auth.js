@@ -27,8 +27,11 @@ class AuthManager {
             
             console.log("User created, saving profile to Firestore...");
             
+            // Determine which collection to save to based on user type
+            const collectionName = userData.userType === 'employer' ? 'employers' : 'employees';
+            
             // Save additional user data to Firestore
-            const userDocRef = await addDoc(collection(db, "users"), {
+            const userDocRef = await addDoc(collection(db, collectionName), {
                 uid: user.uid,
                 email: email,
                 name: userData.name,
@@ -38,7 +41,20 @@ class AuthManager {
                 ...userData
             });
             
-            console.log("Profile saved to Firestore with ID:", userDocRef.id);
+            console.log(`Profile saved to ${collectionName} collection with ID:`, userDocRef.id);
+            
+            // Also save to users collection for general access
+            await addDoc(collection(db, "users"), {
+                uid: user.uid,
+                email: email,
+                name: userData.name,
+                phone: userData.phone,
+                userType: userData.userType,
+                createdAt: new Date(),
+                ...userData
+            });
+            
+            console.log("Profile also saved to users collection");
             
             // Immediately load the profile
             await this.loadUserProfile(user.uid);
@@ -73,19 +89,43 @@ class AuthManager {
     async loadUserProfile(uid) {
         try {
             console.log("Loading user profile for UID:", uid);
-            const q = query(collection(db, "users"), where("uid", "==", uid));
-            const querySnapshot = await getDocs(q);
+            
+            // First try to find in users collection
+            let q = query(collection(db, "users"), where("uid", "==", uid));
+            let querySnapshot = await getDocs(q);
             
             if (!querySnapshot.empty) {
                 const userDoc = querySnapshot.docs[0];
                 this.userProfile = { id: userDoc.id, ...userDoc.data() };
-                console.log("User profile loaded successfully:", this.userProfile);
+                console.log("User profile loaded from users collection:", this.userProfile);
                 return this.userProfile;
-            } else {
-                console.log("No user profile found for UID:", uid);
-                this.userProfile = null;
-                return null;
             }
+            
+            // If not found in users, try employers collection
+            q = query(collection(db, "employers"), where("uid", "==", uid));
+            querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                const userDoc = querySnapshot.docs[0];
+                this.userProfile = { id: userDoc.id, ...userDoc.data() };
+                console.log("User profile loaded from employers collection:", this.userProfile);
+                return this.userProfile;
+            }
+            
+            // If not found in employers, try employees collection
+            q = query(collection(db, "employees"), where("uid", "==", uid));
+            querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                const userDoc = querySnapshot.docs[0];
+                this.userProfile = { id: userDoc.id, ...userDoc.data() };
+                console.log("User profile loaded from employees collection:", this.userProfile);
+                return this.userProfile;
+            }
+            
+            console.log("No user profile found for UID:", uid);
+            this.userProfile = null;
+            return null;
         } catch (error) {
             console.error("Error loading user profile:", error);
             this.userProfile = null;
