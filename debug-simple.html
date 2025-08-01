@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Debug - JSTACK</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-box { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        button { margin: 5px; padding: 10px; background: #1f4a40; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Simple Debug Page</h1>
+    
+    <div class="debug-box">
+        <h3>Step 1: Check Firebase Connection</h3>
+        <button onclick="checkFirebase()">Check Firebase</button>
+        <div id="firebaseStatus">Click button to check</div>
+    </div>
+    
+    <div class="debug-box">
+        <h3>Step 2: Test Registration</h3>
+        <button onclick="testRegister()">Register Test User</button>
+        <div id="registerStatus">Click button to test</div>
+    </div>
+    
+    <div class="debug-box">
+        <h3>Step 3: Test Login</h3>
+        <button onclick="testLogin()">Login Test User</button>
+        <div id="loginStatus">Click button to test</div>
+    </div>
+    
+    <div class="debug-box">
+        <h3>Step 4: Check Profile</h3>
+        <button onclick="checkProfile()">Check User Profile</button>
+        <div id="profileStatus">Click button to check</div>
+    </div>
+    
+    <div class="debug-box">
+        <h3>Step 5: Go to Dashboard</h3>
+        <button onclick="goToDashboard()">Go to Dashboard</button>
+        <div id="dashboardStatus">Click button to go</div>
+    </div>
+
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module">
+        let testUser = null;
+        let testProfile = null;
+        
+        // Step 1: Check Firebase
+        window.checkFirebase = function() {
+            const status = document.getElementById('firebaseStatus');
+            try {
+                if (window.auth && window.db) {
+                    status.innerHTML = '<span class="success">✅ Firebase connected successfully!</span>';
+                } else {
+                    status.innerHTML = '<span class="error">❌ Firebase not connected</span>';
+                }
+            } catch (error) {
+                status.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+            }
+        };
+        
+        // Step 2: Test Registration
+        window.testRegister = async function() {
+            const status = document.getElementById('registerStatus');
+            status.innerHTML = 'Registering...';
+            
+            try {
+                const testEmail = `test${Date.now()}@example.com`;
+                const userData = {
+                    name: 'Test User',
+                    phone: '1234567890',
+                    userType: 'employer'
+                };
+                
+                const result = await window.authManager.registerUser(testEmail, 'password123', userData);
+                
+                if (result.success) {
+                    testUser = result.user;
+                    status.innerHTML = '<span class="success">✅ Registration successful! User: ' + testUser.email + '</span>';
+                } else {
+                    status.innerHTML = '<span class="error">❌ Registration failed: ' + result.error + '</span>';
+                }
+            } catch (error) {
+                status.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+            }
+        };
+        
+        // Step 3: Test Login
+        window.testLogin = async function() {
+            const status = document.getElementById('loginStatus');
+            status.innerHTML = 'Logging in...';
+            
+            try {
+                if (!testUser) {
+                    status.innerHTML = '<span class="error">❌ No test user. Please register first.</span>';
+                    return;
+                }
+                
+                const result = await window.authManager.loginUser(testUser.email, 'password123');
+                
+                if (result.success) {
+                    status.innerHTML = '<span class="success">✅ Login successful!</span>';
+                } else {
+                    status.innerHTML = '<span class="error">❌ Login failed: ' + result.error + '</span>';
+                }
+            } catch (error) {
+                status.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+            }
+        };
+        
+        // Step 4: Check Profile
+        window.checkProfile = async function() {
+            const status = document.getElementById('profileStatus');
+            status.innerHTML = 'Checking profile...';
+            
+            try {
+                if (!testUser) {
+                    status.innerHTML = '<span class="error">❌ No test user. Please register first.</span>';
+                    return;
+                }
+                
+                const profile = await window.authManager.forceLoadUserProfile(testUser.uid);
+                
+                if (profile) {
+                    testProfile = profile;
+                    status.innerHTML = '<span class="success">✅ Profile loaded! Type: ' + profile.userType + '</span>';
+                } else {
+                    status.innerHTML = '<span class="error">❌ Profile not found</span>';
+                }
+            } catch (error) {
+                status.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+            }
+        };
+        
+        // Step 5: Go to Dashboard
+        window.goToDashboard = function() {
+            const status = document.getElementById('dashboardStatus');
+            
+            if (!testUser) {
+                status.innerHTML = '<span class="error">❌ No test user. Please register first.</span>';
+                return;
+            }
+            
+            if (!testProfile) {
+                status.innerHTML = '<span class="error">❌ No profile. Please check profile first.</span>';
+                return;
+            }
+            
+            status.innerHTML = '<span class="success">✅ Navigating to dashboard...</span>';
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1000);
+        };
+        
+        console.log('Simple debug page loaded');
+    </script>
+</body>
+</html> 

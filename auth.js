@@ -21,11 +21,14 @@ class AuthManager {
 
     async registerUser(email, password, userData) {
         try {
+            console.log("Starting registration for:", email);
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             
+            console.log("User created, saving profile to Firestore...");
+            
             // Save additional user data to Firestore
-            await addDoc(collection(db, "users"), {
+            const userDocRef = await addDoc(collection(db, "users"), {
                 uid: user.uid,
                 email: email,
                 name: userData.name,
@@ -34,6 +37,11 @@ class AuthManager {
                 createdAt: new Date(),
                 ...userData
             });
+            
+            console.log("Profile saved to Firestore with ID:", userDocRef.id);
+            
+            // Immediately load the profile
+            await this.loadUserProfile(user.uid);
 
             return { success: true, user };
         } catch (error) {

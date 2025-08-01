@@ -7,15 +7,32 @@ class DashboardManager {
     }
 
     async init() {
+        console.log('Dashboard manager initializing...');
+        
         // Wait for auth to be ready
         await this.waitForAuth();
+        console.log('Auth ready, setting up dashboard...');
+        
         this.setupEventListeners();
         this.loadDashboard();
     }
 
     async waitForAuth() {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
+            let attempts = 0;
+            const maxAttempts = 50; // 5 seconds max wait
+            
             const checkAuth = () => {
+                attempts++;
+                console.log(`Auth check attempt ${attempts}/${maxAttempts}`);
+                
+                if (attempts >= maxAttempts) {
+                    console.error("Auth timeout - redirecting to login");
+                    window.location.href = 'loginpage.html';
+                    reject(new Error('Auth timeout'));
+                    return;
+                }
+                
                 if (window.authManager && window.authManager.isLoggedIn()) {
                     this.currentUser = window.authManager.getCurrentUser();
                     this.userProfile = window.authManager.getUserProfile();
